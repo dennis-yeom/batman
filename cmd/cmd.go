@@ -1,37 +1,86 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 
+	"github.com/dennis-yeom/batman/internal/demo"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var (
+	port  int
+	key   string
+	value string
+
 	// RootCmd is the main command for the CLI
 	RootCmd = &cobra.Command{
 		Use:   "demo",
 		Short: "start the demo",
 		Long:  "Starts the demo execution for Dennis",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("Running the demo")
+			//fmt.Println("Running the demo")
 		},
 	}
 
-	// create a teset command
-	TestCmd = &cobra.Command{
-		Use:   "test",
-		Short: "this is the command i made",
+	// SetCmd sets a key and value in Redis
+	SetCmd = &cobra.Command{
+		Use:   "set",
+		Short: "sets key and value",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println("You chose the test command!")
-			return nil
+			d, err := demo.New(port)
+			if err != nil {
+				return err
+			}
+			return d.Set(key, value)
+		},
+	}
+
+	// GetCmd retrieves a value from Redis based on the key
+	GetCmd = &cobra.Command{
+		Use:   "get",
+		Short: "gets value for key",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			d, err := demo.New(port)
+			if err != nil {
+				return err
+			}
+			return d.Get(key)
 		},
 	}
 )
 
 func init() {
 	// Add the TestCmd to the RootCmd
-	RootCmd.AddCommand(TestCmd)
+	RootCmd.AddCommand(SetCmd)
+	RootCmd.AddCommand(GetCmd)
+
+	// Set up Viper to read configuration from .config.yml
+	viper.SetConfigName(".config") // name of config file (without extension)
+	viper.SetConfigType("yaml")    // required since we're using .yml
+	viper.AddConfigPath(".")       // look for the config file in the current directory
+
+	// Set default values in case .config.yml does not exist or lacks specific entries
+	viper.SetDefault("redis.port", 6380)
+
+	// Bind Viper values to flags
+	RootCmd.PersistentFlags().IntVarP(&port, "port", "p", viper.GetInt("redis.port"), "port of redis cache")
+
+	// Flags for SetCmd
+	SetCmd.PersistentFlags().StringVarP(&key, "key", "k", "", "name of the key")
+	SetCmd.PersistentFlags().StringVarP(&value, "value", "v", "", "name of the value")
+
+	// Flags for GetCmd
+	GetCmd.PersistentFlags().StringVarP(&key, "key", "k", "", "name of the key")
+
+	// Load the config file if it exists
+	if err := viper.ReadInConfig(); err != nil {
+		log.Printf("No configuration file found; using defaults or command-line args: %v", err)
+	}
+
+	// Bind Viper keys to flags so changes reflect in CLI options
+	viper.BindPFlags(RootCmd.PersistentFlags())
+
 }
 
 // Execute runs the RootCmd and handles any errors
