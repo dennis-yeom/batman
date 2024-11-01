@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/dennis-yeom/batman/internal/demo"
@@ -10,7 +9,9 @@ import (
 )
 
 var (
-	port int
+	port  int
+	key   string
+	value string
 
 	// RootCmd is the main command for the CLI
 	RootCmd = &cobra.Command{
@@ -22,27 +23,37 @@ var (
 		},
 	}
 
-	// test connection to redis
-	TestCmd = &cobra.Command{
-		Use:   "test",
-		Short: "tests connection to redis",
+	// SetCmd sets a key and value in Redis
+	SetCmd = &cobra.Command{
+		Use:   "set",
+		Short: "sets key and value",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			d, err := demo.New(port)
-
 			if err != nil {
 				return err
 			}
+			return d.Set(key, value)
+		},
+	}
 
-			// Proceed with using d since it was created successfully
-			fmt.Println("Demo instance created successfully:", d)
-			return nil
+	// GetCmd retrieves a value from Redis based on the key
+	GetCmd = &cobra.Command{
+		Use:   "get",
+		Short: "gets value for key",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			d, err := demo.New(port)
+			if err != nil {
+				return err
+			}
+			return d.Get(key)
 		},
 	}
 )
 
 func init() {
 	// Add the TestCmd to the RootCmd
-	RootCmd.AddCommand(TestCmd)
+	RootCmd.AddCommand(SetCmd)
+	RootCmd.AddCommand(GetCmd)
 
 	// Set up Viper to read configuration from .config.yml
 	viper.SetConfigName(".config") // name of config file (without extension)
@@ -55,6 +66,13 @@ func init() {
 	// Bind Viper values to flags
 	RootCmd.PersistentFlags().IntVarP(&port, "port", "p", viper.GetInt("redis.port"), "port of redis cache")
 
+	// Flags for SetCmd
+	SetCmd.PersistentFlags().StringVarP(&key, "key", "k", "", "name of the key")
+	SetCmd.PersistentFlags().StringVarP(&value, "value", "v", "", "name of the value")
+
+	// Flags for GetCmd
+	GetCmd.PersistentFlags().StringVarP(&key, "key", "k", "", "name of the key")
+
 	// Load the config file if it exists
 	if err := viper.ReadInConfig(); err != nil {
 		log.Printf("No configuration file found; using defaults or command-line args: %v", err)
@@ -62,6 +80,7 @@ func init() {
 
 	// Bind Viper keys to flags so changes reflect in CLI options
 	viper.BindPFlags(RootCmd.PersistentFlags())
+
 }
 
 // Execute runs the RootCmd and handles any errors

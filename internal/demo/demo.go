@@ -1,6 +1,9 @@
 package demo
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/dennis-yeom/batman/internal/redis"
 )
 
@@ -23,4 +26,35 @@ func New(port int, opts ...DemoOption) (*Demo, error) {
 	}
 
 	return d, nil
+}
+
+// Set sets a value in Redis
+func (d *Demo) Set(key string, value string) error {
+	fmt.Println("Running d.Set()")
+
+	ctx := context.Background()
+
+	// Sets the value to the key in Redis
+	if err := d.redis.Set(ctx, key, value, 0); err != nil {
+		return err
+	}
+
+	fmt.Printf("Set value:%s to key:%s\n", value, key)
+	return nil
+}
+
+// Get retrieves a value from Redis
+func (d *Demo) Get(key string) error {
+	fmt.Println("Running d.Get()")
+
+	ctx := context.Background()
+
+	// Gets the value of the key in Redis
+	val, err := d.redis.Get(ctx, key)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Got value for key %s: %s\n", key, val)
+	return nil
 }
