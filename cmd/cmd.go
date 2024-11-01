@@ -51,10 +51,6 @@ var (
 )
 
 func init() {
-	// Add the TestCmd to the RootCmd
-	RootCmd.AddCommand(SetCmd)
-	RootCmd.AddCommand(GetCmd)
-
 	// Set up Viper to read configuration from .config.yml
 	viper.SetConfigName(".config") // name of config file (without extension)
 	viper.SetConfigType("yaml")    // required since we're using .yml
@@ -62,6 +58,15 @@ func init() {
 
 	// Set default values in case .config.yml does not exist or lacks specific entries
 	viper.SetDefault("redis.port", 6380)
+
+	// Load the config file if it exists
+	if err := viper.ReadInConfig(); err != nil {
+		log.Printf("No configuration file found; using defaults or command-line args: %v", err)
+	}
+
+	// Add the TestCmd to the RootCmd
+	RootCmd.AddCommand(SetCmd)
+	RootCmd.AddCommand(GetCmd)
 
 	// Bind Viper values to flags
 	RootCmd.PersistentFlags().IntVarP(&port, "port", "p", viper.GetInt("redis.port"), "port of redis cache")
@@ -72,11 +77,6 @@ func init() {
 
 	// Flags for GetCmd
 	GetCmd.PersistentFlags().StringVarP(&key, "key", "k", "", "name of the key")
-
-	// Load the config file if it exists
-	if err := viper.ReadInConfig(); err != nil {
-		log.Printf("No configuration file found; using defaults or command-line args: %v", err)
-	}
 
 	// Bind Viper keys to flags so changes reflect in CLI options
 	viper.BindPFlags(RootCmd.PersistentFlags())
