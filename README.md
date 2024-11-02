@@ -1,5 +1,5 @@
 # batman
-file watcher
+file watcher that monitors an s3 compliant bucket. checks if a file was added or modified, and adds that to a redis hash map to keep track of changes.
 
 ## creating module
 ```
@@ -19,14 +19,14 @@ go get github.com/spf13/viper
 ```
 go run main.go --help
 ```
-![alt text](image.png)
+![alt text](images/image.png)
 
 
 
 ```
 go run main.go test
 ```
-![alt text](image-1.png)
+![alt text](images/image-1.png)
 
 
 ## reddis client in go
@@ -54,4 +54,4 @@ go run main.go set -k dennis -v 1995
 go run main.go get -k dennis
 ```
 
-![alt text](image-3.png)
+![alt text](images/image-3.png)

@@ -1,9 +1,9 @@
-package main
+package main //create package main
 
 import (
-	"github.com/dennis-yeom/batman/cmd"
+	"github.com/dennis-yeom/batman/cmd" //import cmd
 )
 
 func main() {
-	cmd.Execute()
+	cmd.Execute() //execute defined in cmd package
 }
