@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"log" //import go library for logging. used for logging errors.
 
-	"github.com/dennis-yeom/batman/internal/demo" //import
-
+	"github.com/dennis-yeom/batman/internal/demo"
 	"github.com/spf13/cobra" //cobra & viper libraries used to create CLI
 	"github.com/spf13/viper"
 )
@@ -50,6 +49,19 @@ var (
 			return d.Get(key)
 		},
 	}
+
+	//test command by listing files in bucket
+	TestCmd = &cobra.Command{
+		Use:   "test",
+		Short: "test s3 connection by printing bucket files",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			d, err := demo.New(port, demo.WithS3(viper.GetString("s3.bucket")))
+			if err != nil {
+				return err
+			}
+			return d.List()
+		},
+	}
 )
 
 // set up viper for easy configuration
@@ -66,9 +78,10 @@ func init() {
 		log.Printf("No configuration file found; using defaults or command-line args: %v", err)
 	}
 
-	// Add the TestCmd to the RootCmd
+	// Add the commands to the RootCmd
 	RootCmd.AddCommand(SetCmd)
 	RootCmd.AddCommand(GetCmd)
+	RootCmd.AddCommand(TestCmd)
 
 	// Bind Viper values to flags
 	RootCmd.PersistentFlags().IntVarP(&port, "port", "p", viper.GetInt("redis.port"), "port of redis cache")

@@ -55,3 +55,13 @@ go run main.go get -k dennis
 ```
 
 ![alt text](images/image-3.png)
+
+
+## AWS Access:
+	•	Ensure you have AWS credentials (Access Key ID and Secret Access Key) with permissions for S3, SQS, and other required services.
+	•	Set up your environment variables for AWS credentials:
+
+```
+export AWS_ACCESS_KEY_ID="your-access-key-id"
+export AWS_SECRET_ACCESS_KEY="your-secret-access-key"
+```
