@@ -4,12 +4,14 @@ import (
 	"context" //controls timeouts and cancels
 	"fmt"     //i/o stuff
 
+	s3 "github.com/dennis-yeom/batman/internal/aws"
 	"github.com/dennis-yeom/batman/internal/redis" //imports redis package
 )
 
 // the demo object contains a client for redis
 type Demo struct {
 	redis *redis.RedisClient
+	s3    *s3.S3Client
 }
 
 type DemoOption func(*Demo) error
@@ -27,6 +29,19 @@ func New(port int, opts ...DemoOption) (*Demo, error) {
 	}
 
 	return d, nil
+}
+
+// WithS3 sets up the S3 client for the Demo struct
+func WithS3(bucket string) DemoOption {
+	return func(d *Demo) error {
+		ctx := context.TODO()
+		s3Client, err := s3.NewS3Client(ctx, bucket)
+		if err != nil {
+			return fmt.Errorf("failed to initialize S3 client: %w", err)
+		}
+		d.s3 = s3Client // Directly assign the S3Client instance
+		return nil
+	}
 }
 
 // Set sets a value in Redis
@@ -58,4 +73,8 @@ func (d *Demo) Get(key string) error {
 
 	fmt.Printf("Got value for key %s: %s\n", key, val)
 	return nil
+}
+
+func (d *Demo) List() error {
+	return d.s3.ListFiles(context.Background())
 }
