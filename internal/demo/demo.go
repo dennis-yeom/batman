@@ -1,19 +1,20 @@
-package demo
+package demo //create demo package for import
 
 import (
-	"context"
-	"fmt"
+	"context" //controls timeouts and cancels
+	"fmt"     //i/o stuff
 
-	"github.com/dennis-yeom/batman/internal/redis"
+	"github.com/dennis-yeom/batman/internal/redis" //imports redis package
 )
 
+// the demo object contains a client for redis
 type Demo struct {
 	redis *redis.RedisClient
 }
 
 type DemoOption func(*Demo) error
 
-// New initializes a new Demo instance with Redis and optional S3 configuration
+// New initializes a new Demo instance with Redis
 func New(port int, opts ...DemoOption) (*Demo, error) {
 	d := &Demo{
 		redis: redis.New(port),
