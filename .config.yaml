@@ -2,4 +2,4 @@ redis:
   port: 6380
 
 s3:
-  bucket: test39285
+  bucket: test-bucket-6969

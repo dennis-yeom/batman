@@ -20,7 +20,7 @@ type S3Client struct {
 
 // NewS3Client initializes a new S3Client with the specified bucket
 func NewS3Client(ctx context.Context, bucket string) (*S3Client, error) {
-	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("us-east-2"))
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("us-east-1")) //make sure region is correct
 	if err != nil {
 		return nil, fmt.Errorf("unable to load SDK config: %w", err)
 	}
@@ -46,12 +46,30 @@ func (s *S3Client) CheckConnection(ctx context.Context) error {
 	return nil
 }
 
-// ListFiles lists all files in the S3 bucket
+// GetObjectVersion retrieves the metadata of an object and returns its version ID
+func (s *S3Client) GetObjectVersion(ctx context.Context, key string) (string, error) {
+	input := &s3.HeadObjectInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(key),
+	}
+
+	result, err := s.client.HeadObject(ctx, input)
+	if err != nil {
+		return "", fmt.Errorf("failed to get object metadata: %w", err)
+	}
+
+	versionID := aws.ToString(result.VersionId)
+	//fmt.Printf("File %s in bucket %s has version ID: %s\n", key, s.bucket, versionID)
+	return versionID, nil
+}
+
+// ListFiles lists all files in the S3 bucket and prints their version IDs
 func (s *S3Client) ListFiles(ctx context.Context) error {
 	input := &s3.ListObjectsV2Input{
 		Bucket: aws.String(s.bucket),
 	}
 
+	// List all objects in the specified bucket
 	result, err := s.client.ListObjectsV2(ctx, input)
 	if err != nil {
 		return fmt.Errorf("failed to list files: %w", err)
@@ -59,7 +77,16 @@ func (s *S3Client) ListFiles(ctx context.Context) error {
 
 	fmt.Println("Files in bucket:", s.bucket)
 	for _, item := range result.Contents {
-		fmt.Printf(" - %s (size: %d)\n", *item.Key, item.Size)
+		// Use GetObjectVersion to retrieve the version ID for each object
+		versionID, err := s.GetObjectVersion(ctx, *item.Key)
+		if err != nil {
+			// Print an error if we can't retrieve the version, but continue with the next item
+			fmt.Printf(" - %s (size: %d) - failed to retrieve version: %v\n", *item.Key, item.Size, err)
+			continue
+		}
+
+		// Print the key, size, and version ID of the object
+		fmt.Printf(" - %s (size: %d, version: %s)\n", *item.Key, item.Size, versionID)
 	}
 	return nil
 }

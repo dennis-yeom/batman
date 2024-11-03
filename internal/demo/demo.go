@@ -8,7 +8,7 @@ import (
 	"github.com/dennis-yeom/batman/internal/redis" //imports redis package
 )
 
-// the demo object contains a client for redis
+// the demo object contains clients for each of the services
 type Demo struct {
 	redis *redis.RedisClient
 	s3    *s3.S3Client
