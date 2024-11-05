@@ -10,9 +10,10 @@ import (
 )
 
 var (
-	port  int
-	key   string
-	value string
+	port  int    //port of redis
+	key   string //key for redis map
+	value string //value for corresponding redis key
+	t     int    //interval for how often to scan bucket
 
 	// RootCmd is the main command for the CLI
 	RootCmd = &cobra.Command{
@@ -50,16 +51,21 @@ var (
 		},
 	}
 
-	//test command by listing files in bucket
+	/// testing detection of changes in bucket...
 	TestCmd = &cobra.Command{
-		Use:   "test",
-		Short: "test s3 connection by printing bucket files",
+		Use:   "watch",
+		Short: "watch for changes to objects in s3",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			d, err := demo.New(port, demo.WithS3(viper.GetString("s3.bucket")))
+			d, err := demo.New(
+				port,
+				demo.WithS3(viper.GetString("s3.bucket")),
+			)
 			if err != nil {
 				return err
 			}
-			return d.ListObjectVersions()
+			d.Watch(t)
+
+			return nil
 		},
 	}
 )
@@ -89,6 +95,9 @@ func init() {
 	// Flags for SetCmd
 	SetCmd.PersistentFlags().StringVarP(&key, "key", "k", "", "name of the key")
 	SetCmd.PersistentFlags().StringVarP(&value, "value", "v", "", "name of the value")
+
+	// Flags for TestCmd
+	TestCmd.PersistentFlags().IntVarP(&t, "time", "t", 3, "number of seconds to wait")
 
 	// Flags for GetCmd
 	GetCmd.PersistentFlags().StringVarP(&key, "key", "k", "", "name of the key")
