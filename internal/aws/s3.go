@@ -10,7 +10,7 @@ import (
 )
 
 type S3 interface {
-	CheckConnection(ctx context.Context) error // Method to check S3 connectivity
+	//CheckConnection(ctx context.Context) error // Method to check S3 connectivity
 	ListFiles(ctx context.Context) error
 	GetObjectVersion(ctx context.Context, key string) (string, error)
 	GetAllObjectVersions(ctx context.Context) ([]ObjectInfo, error)
@@ -35,19 +35,19 @@ func NewS3Client(ctx context.Context, bucket string) (*S3Client, error) {
 }
 
 // CheckConnection tests connectivity to the S3 bucket by attempting to list objects
-func (s *S3Client) CheckConnection(ctx context.Context) error {
-	input := &s3.ListObjectsV2Input{
-		Bucket: aws.String(s.bucket),
-	}
+// func (s *S3Client) CheckConnection(ctx context.Context) error {
+// 	input := &s3.ListObjectsV2Input{
+// 		Bucket: aws.String(s.bucket),
+// 	}
 
-	_, err := s.client.ListObjectsV2(ctx, input)
-	if err != nil {
-		return fmt.Errorf("failed to connect to S3 bucket %s: %w", s.bucket, err)
-	}
+// 	_, err := s.client.ListObjectsV2(ctx, input)
+// 	if err != nil {
+// 		return fmt.Errorf("failed to connect to S3 bucket %s: %w", s.bucket, err)
+// 	}
 
-	fmt.Printf("Successfully connected to S3 bucket: %s\n", s.bucket)
-	return nil
-}
+// 	fmt.Printf("Successfully connected to S3 bucket: %s\n", s.bucket)
+// 	return nil
+// }
 
 // GetObjectVersion retrieves the metadata of an object and returns its version ID
 func (s *S3Client) GetObjectVersion(ctx context.Context, key string) (string, error) {
