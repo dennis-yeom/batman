@@ -3,6 +3,7 @@ package demo //create demo package for import
 import (
 	"context" //controls timeouts and cancels
 	"fmt"     //i/o stuff
+	"time"
 
 	s3 "github.com/dennis-yeom/batman/internal/aws"
 	"github.com/dennis-yeom/batman/internal/redis" //imports redis package
@@ -94,4 +95,72 @@ func (d *Demo) ListObjectVersions() error {
 	}
 
 	return nil
+}
+
+// Watch periodically lists all object versions from S3, compares each version to the Redis cache,
+// and updates Redis if necessary. If no changes are detected, it prints a message.
+func (d *Demo) Watch(t int) {
+	ctx := context.Background()
+	// Set up a ticker to run every 30 seconds
+	ticker := time.NewTicker(time.Duration(t) * time.Second)
+	defer ticker.Stop() // Ensure the ticker is stopped when Watch exits
+
+	fmt.Println("Starting periodic check on S3 object versions...")
+
+	// Using for range to iterate over each tick from ticker.C
+	for range ticker.C {
+		// Call checkObjectVersions on each tick
+		fmt.Println("Ticker triggered: Checking object versions...")
+		ov, err := d.s3.GetAllObjectVersions(ctx)
+		if err != nil {
+			fmt.Printf("Error checking object versions: %v\n", err)
+			continue
+		}
+
+		//checking for changes
+		changesDetected := false
+
+		//for every object from: ov, err := d.s3.GetAllObjectVersions(ctx)
+		for _, o := range ov {
+			// Track if any changes were detected
+			changesDetected := false
+			// Retrieve the cached version from Redis
+			cachedVersion, err := d.redis.Get(ctx, o.Key)
+			if err != nil && err.Error() != "redis: nil" {
+				// If there's an error other than key not found, log and continue
+				fmt.Printf("Failed to retrieve cache for key %s: %v\n", o.Key, err)
+				continue
+			}
+
+			// If the key doesn't exist in Redis, set it and print a message
+			if cachedVersion == "" {
+				if err := d.redis.Set(ctx, o.Key, o.VersionID, 0); err != nil {
+					fmt.Printf("Failed to set Redis cache for key %s: %v\n", o.Key, err)
+				} else {
+					fmt.Printf("Added to cache: Key: %s, Version: %s\n", o.Key, o.VersionID)
+					changesDetected = true
+					cachedVersion = o.VersionID
+				}
+			}
+
+			// If the cached version differs from the S3 version, update Redis and print a message
+			if cachedVersion != o.VersionID {
+				if err := d.redis.Set(ctx, o.Key, o.VersionID, 0); err != nil {
+					fmt.Printf("Failed to update Redis cache for key %s: %v\n", o.Key, err)
+				} else {
+					fmt.Printf("Updated cache: Key: %s, Old Version: %s, New Version: %s\n", o.Key, cachedVersion, o.VersionID)
+					changesDetected = true
+				}
+			}
+
+			if changesDetected {
+				fmt.Println("Change detected!")
+			}
+		}
+
+		// Print message if no changes were detected during this tick
+		if !changesDetected {
+			fmt.Println("No changes detected in S3 object versions.")
+		}
+	}
 }
