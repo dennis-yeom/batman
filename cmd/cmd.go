@@ -59,7 +59,7 @@ var (
 			if err != nil {
 				return err
 			}
-			return d.List()
+			return d.ListObjectVersions()
 		},
 	}
 )
