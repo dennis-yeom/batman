@@ -52,7 +52,7 @@ var (
 	}
 
 	/// testing detection of changes in bucket...
-	TestCmd = &cobra.Command{
+	WatchCmd = &cobra.Command{
 		Use:   "watch",
 		Short: "watch for changes to objects in s3",
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -87,7 +87,7 @@ func init() {
 	// Add the commands to the RootCmd
 	RootCmd.AddCommand(SetCmd)
 	RootCmd.AddCommand(GetCmd)
-	RootCmd.AddCommand(TestCmd)
+	RootCmd.AddCommand(WatchCmd)
 
 	// Bind Viper values to flags
 	RootCmd.PersistentFlags().IntVarP(&port, "port", "p", viper.GetInt("redis.port"), "port of redis cache")
@@ -97,7 +97,7 @@ func init() {
 	SetCmd.PersistentFlags().StringVarP(&value, "value", "v", "", "name of the value")
 
 	// Flags for TestCmd
-	TestCmd.PersistentFlags().IntVarP(&t, "time", "t", 3, "number of seconds to wait")
+	WatchCmd.PersistentFlags().IntVarP(&t, "time", "t", 3, "number of seconds to wait")
 
 	// Flags for GetCmd
 	GetCmd.PersistentFlags().StringVarP(&key, "key", "k", "", "name of the key")
