@@ -5,7 +5,7 @@ import (
 	"fmt"     //i/o stuff
 	"time"
 
-	s3 "github.com/dennis-yeom/batman/internal/aws"
+	"github.com/dennis-yeom/batman/internal/aws/s3"
 	"github.com/dennis-yeom/batman/internal/redis" //imports redis package
 )
 
