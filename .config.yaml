@@ -3,3 +3,6 @@ redis:
 
 s3:
   bucket: test-bucket-1840  
+
+sqs:
+  url: https://sqs.us-east-1.amazonaws.com/890742596725/testQ-2914
