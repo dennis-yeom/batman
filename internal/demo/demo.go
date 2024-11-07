@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/dennis-yeom/batman/internal/aws/s3"
+	"github.com/dennis-yeom/batman/internal/aws/sqs"
 	"github.com/dennis-yeom/batman/internal/redis" //imports redis package
 )
 
@@ -13,6 +14,7 @@ import (
 type Demo struct {
 	redis *redis.RedisClient
 	s3    *s3.S3Client
+	sqs   *sqs.SQSClient
 }
 
 type DemoOption func(*Demo) error
@@ -41,6 +43,20 @@ func WithS3(bucket string) DemoOption {
 			return fmt.Errorf("failed to initialize S3 client: %w", err)
 		}
 		d.s3 = s3Client // Directly assign the S3Client instance
+		return nil
+	}
+}
+
+// WithSQS is an option to initialize the SQS client in Demo
+func WithSQS(sqsUrl string) DemoOption {
+	return func(d *Demo) error {
+		sqsClient, err := sqs.NewSQSClient(context.Background(), sqsUrl)
+		if err != nil {
+			return err
+		}
+		d.sqs = sqsClient
+		println("SQS client successfully created!")
+
 		return nil
 	}
 }

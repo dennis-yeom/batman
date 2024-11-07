@@ -51,7 +51,7 @@ var (
 		},
 	}
 
-	/// testing detection of changes in bucket...
+	/// watch command for detection of changes in bucket...
 	WatchCmd = &cobra.Command{
 		Use:   "watch",
 		Short: "watch for changes to objects in s3",
@@ -64,6 +64,23 @@ var (
 				return err
 			}
 			d.Watch(t)
+
+			return nil
+		},
+	}
+
+	// testing detection of changes in bucket...
+	TestCmd = &cobra.Command{
+		Use:   "test",
+		Short: "test connection to sqs and publish message",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			_, err := demo.New(
+				port,
+				demo.WithSQS(viper.GetString("sqs.url")),
+			)
+			if err != nil {
+				return err
+			}
 
 			return nil
 		},
@@ -88,6 +105,7 @@ func init() {
 	RootCmd.AddCommand(SetCmd)
 	RootCmd.AddCommand(GetCmd)
 	RootCmd.AddCommand(WatchCmd)
+	RootCmd.AddCommand(TestCmd)
 
 	// Bind Viper values to flags
 	RootCmd.PersistentFlags().IntVarP(&port, "port", "p", viper.GetInt("redis.port"), "port of redis cache")
