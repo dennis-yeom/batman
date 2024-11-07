@@ -55,10 +55,23 @@ func WithSQS(sqsUrl string) DemoOption {
 			return err
 		}
 		d.sqs = sqsClient
-		println("SQS client successfully created!")
-
 		return nil
 	}
+}
+
+// SendMessage sends a message to the SQS queue through the Demo instance
+func (d *Demo) SendMessage(ctx context.Context, messageBody string) error {
+	if d.sqs == nil {
+		return fmt.Errorf("SQS client is not initialized")
+	}
+
+	err := d.sqs.SendMessage(ctx, messageBody)
+	if err != nil {
+		return fmt.Errorf("failed to send message through Demo: %v", err)
+	}
+
+	//fmt.Printf("Message successfully sent through Demo: %s\n", messageBody)
+	return nil
 }
 
 // Set sets a value in Redis

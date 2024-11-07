@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"log" //import go library for logging. used for logging errors.
 
@@ -69,19 +70,26 @@ var (
 		},
 	}
 
-	// testing detection of changes in bucket...
+	// sending message to queue
 	TestCmd = &cobra.Command{
-		Use:   "test",
-		Short: "test connection to sqs and publish message",
+		Use:   "test-sqs-send",
+		Short: "Send a test message to the SQS queue to verify connectivity",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_, err := demo.New(
+			// Initialize the Demo instance with SQS client
+			d, err := demo.New(
 				port,
 				demo.WithSQS(viper.GetString("sqs.url")),
 			)
 			if err != nil {
 				return err
 			}
+			// Send a test message to verify connection
+			testMessage := "Test message to verify SQS connectivity"
+			if err := d.SendMessage(context.Background(), testMessage); err != nil {
+				return fmt.Errorf("failed to send test message: %v", err)
+			}
 
+			fmt.Println("Test message successfully sent to SQS.")
 			return nil
 		},
 	}
