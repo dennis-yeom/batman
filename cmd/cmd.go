@@ -103,7 +103,7 @@ var (
 			endpoint := viper.GetString("s3.endpoint")
 
 			// Initialize the demo instance
-			d, err := demo.New(demo.WithS3Client(bucket, endpoint))
+			d, err := demo.New(demo.WithS3(bucket, endpoint))
 			if err != nil {
 				return fmt.Errorf("failed to initialize demo instance: %v", err)
 			}
