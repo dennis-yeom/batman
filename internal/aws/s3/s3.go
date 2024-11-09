@@ -21,14 +21,23 @@ type S3Client struct {
 }
 
 // NewS3Client initializes a new S3Client with the specified bucket
-func NewS3Client(ctx context.Context, bucket string) (*S3Client, error) {
-	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("us-east-1")) //make sure region is correct
+func NewS3Client(ctx context.Context, bucket, endpoint string) (*S3Client, error) {
+	// Load the default configuration with a region
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("us-east-1"))
 	if err != nil {
 		return nil, fmt.Errorf("unable to load SDK config: %w", err)
 	}
 
+	// Configure the S3 client with a custom endpoint for Linode
+	s3Client := s3.New(s3.Options{
+		Region:           "us-east-1",
+		EndpointResolver: s3.EndpointResolverFromURL(endpoint),
+		Credentials:      cfg.Credentials,
+		UsePathStyle:     true, // Enable path-style addressing
+	})
+
 	return &S3Client{
-		client: s3.NewFromConfig(cfg),
+		client: s3Client,
 		bucket: bucket,
 	}, nil
 }
@@ -50,13 +59,12 @@ func (s *S3Client) GetObjectVersion(ctx context.Context, key string) (string, er
 	return versionID, nil
 }
 
-// ListFiles lists all files in the S3 bucket and prints their version IDs
+// ListFiles lists all files in the S3 bucket and prints their version IDs (if available)
 func (s *S3Client) ListFiles(ctx context.Context) error {
 	input := &s3.ListObjectsV2Input{
 		Bucket: aws.String(s.bucket),
 	}
 
-	// List all objects in the specified bucket
 	result, err := s.client.ListObjectsV2(ctx, input)
 	if err != nil {
 		return fmt.Errorf("failed to list files: %w", err)
@@ -64,16 +72,19 @@ func (s *S3Client) ListFiles(ctx context.Context) error {
 
 	fmt.Println("Files in bucket:", s.bucket)
 	for _, item := range result.Contents {
-		// Use GetObjectVersion to retrieve the version ID for each object
+		// Attempt to retrieve the version ID for each object
 		versionID, err := s.GetObjectVersion(ctx, *item.Key)
 		if err != nil {
-			// Print an error if we can't retrieve the version, but continue with the next item
 			fmt.Printf(" - %s (size: %d) - failed to retrieve version: %v\n", *item.Key, item.Size, err)
 			continue
 		}
 
-		// Print the key, size, and version ID of the object
-		fmt.Printf(" - %s (size: %d, version: %s)\n", *item.Key, item.Size, versionID)
+		// Print object details, handle missing versionID gracefully
+		if versionID == "" {
+			fmt.Printf(" - %s (size: %d, no versioning)\n", *item.Key, item.Size)
+		} else {
+			fmt.Printf(" - %s (size: %d, version: %s)\n", *item.Key, item.Size, versionID)
+		}
 	}
 	return nil
 }
@@ -97,19 +108,19 @@ func (s *S3Client) GetAllObjectVersions(ctx context.Context) ([]ObjectInfo, erro
 
 	var objects []ObjectInfo
 	for _, item := range result.Contents {
+		// Attempt to retrieve the version ID for each object
 		versionID, err := s.GetObjectVersion(ctx, *item.Key)
 		if err != nil {
 			fmt.Printf("Failed to get version for object %s: %v\n", *item.Key, err)
 			continue
 		}
 
+		// Append object with key and (optional) version ID
 		objects = append(objects, ObjectInfo{
 			Key:       *item.Key,
-			VersionID: versionID,
+			VersionID: versionID, // May be empty if versioning is not enabled
 		})
 	}
 
 	return objects, nil
 }
-
-var _ S3 = &S3Client{}

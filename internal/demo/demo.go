@@ -8,6 +8,7 @@ import (
 	"github.com/dennis-yeom/batman/internal/aws/s3"
 	"github.com/dennis-yeom/batman/internal/aws/sqs"
 	"github.com/dennis-yeom/batman/internal/redis" //imports redis package
+	"github.com/spf13/viper"
 )
 
 // the demo object contains clients for each of the services
@@ -37,13 +38,20 @@ func New(port int, opts ...DemoOption) (*Demo, error) {
 // WithS3 sets up the S3 client for the Demo struct
 func WithS3(bucket string) DemoOption {
 	return func(d *Demo) error {
-		ctx := context.TODO()
-		s3Client, err := s3.NewS3Client(ctx, bucket)
-		if err != nil {
-			return fmt.Errorf("failed to initialize S3 client: %w", err)
+		// Retrieve the endpoint from configuration
+		endpoint := viper.GetString("s3.endpoint")
+		if endpoint == "" {
+			return fmt.Errorf("endpoint must be set in the config file")
 		}
-		d.s3 = s3Client // Directly assign the S3Client instance
+
+		// Initialize the S3 client with the bucket and endpoint
+		s3Client, err := s3.NewS3Client(context.TODO(), bucket, endpoint)
+		if err != nil {
+			return fmt.Errorf("failed to initialize S3 client: %v", err)
+		}
+		d.s3 = s3Client
 		return nil
+
 	}
 }
 

@@ -93,6 +93,29 @@ var (
 			return nil
 		},
 	}
+
+	ListCmd = &cobra.Command{
+		Use:   "list",
+		Short: "List all objects in the specified S3 bucket",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// Get configuration parameters
+			bucket := viper.GetString("s3.bucket")
+			endpoint := viper.GetString("s3.endpoint")
+
+			// Initialize the demo instance
+			d, err := demo.New(demo.WithS3Client(bucket, endpoint))
+			if err != nil {
+				return fmt.Errorf("failed to initialize demo instance: %v", err)
+			}
+
+			// Call the List method to display the objects in the bucket
+			if err := d.List(context.TODO()); err != nil {
+				return fmt.Errorf("failed to list objects: %v", err)
+			}
+
+			return nil
+		},
+	}
 )
 
 // set up viper for easy configuration

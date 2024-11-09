@@ -2,6 +2,22 @@
 file watcher that monitors an s3 compliant bucket. checks if a file was added or modified, and adds that to a redis hash map to keep track of changes.
 
 ## first steps...
+```
+go mod init github.com/dennis-yeom/fw
+```
+
+## installing cobra...
+make sure you have downloaded necessary packages:
+
+```
+go get -u github.com/spf13/cobra
+```
+
+## testing cobra command lines...
+to see possible entries:
+```
+go run main.go -h
+```
 
 ### aws
 make sure you set up your aws keys!
