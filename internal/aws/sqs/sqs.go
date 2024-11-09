@@ -22,6 +22,9 @@ func NewSQSClient(ctx context.Context, queueURL string) (*SQSClient, error) {
 		return nil, fmt.Errorf("unable to load SDK config, %v", err)
 	}
 
+	// Print a message indicating successful SQS client creation
+	fmt.Println("Successfully created SQS client and connected to queue:", queueURL)
+
 	return &SQSClient{
 		client:   sqs.NewFromConfig(cfg),
 		queueURL: queueURL,
