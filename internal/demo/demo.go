@@ -184,6 +184,7 @@ func (d *Demo) Watch(t int) {
 
 			if changesDetected {
 				fmt.Println("Change detected!")
+				d.sqs.SendMessage(ctx, "changes detected!")
 			}
 		}
 
