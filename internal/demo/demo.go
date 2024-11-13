@@ -8,7 +8,6 @@ import (
 	"github.com/dennis-yeom/batman/internal/aws/s3"
 	"github.com/dennis-yeom/batman/internal/aws/sqs"
 	"github.com/dennis-yeom/batman/internal/redis" //imports redis package
-	"github.com/spf13/viper"
 )
 
 // the demo object contains clients for each of the services
@@ -36,10 +35,9 @@ func New(port int, opts ...DemoOption) (*Demo, error) {
 }
 
 // WithS3 sets up the S3 client for the Demo struct
-func WithS3(bucket string) DemoOption {
+func WithS3(bucket string, endpoint string) DemoOption {
 	return func(d *Demo) error {
 		// Retrieve the endpoint from configuration
-		endpoint := viper.GetString("s3.endpoint")
 		if endpoint == "" {
 			return fmt.Errorf("endpoint must be set in the config file")
 		}

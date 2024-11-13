@@ -1,10 +1,10 @@
 redis:
   port: 6380
 
-s3:
+s3:  
   bucket: "pcw-test"  
   region: "us-east-1"
-  endpoint: "https://us-east-1.linodeobjects.com" 
+  endpoint: "https://us-east-1.linodeobjects.com"
 
 sqs:
   url: https://sqs.us-east-1.amazonaws.com/890742596725/q1934
