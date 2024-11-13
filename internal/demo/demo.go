@@ -56,10 +56,12 @@ func WithS3(bucket string, endpoint string) DemoOption {
 // WithSQS is an option to initialize the SQS client in Demo
 func WithSQS(sqsUrl string) DemoOption {
 	return func(d *Demo) error {
+		// Use NewSQSClient to initialize SQSClient with the specified queue URL
 		sqsClient, err := sqs.NewSQSClient(context.Background(), sqsUrl)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to initialize SQS client: %w", err)
 		}
+		fmt.Println("SQS client successfully initialized and assigned.")
 		d.sqs = sqsClient
 		return nil
 	}

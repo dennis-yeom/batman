@@ -60,6 +60,7 @@ var (
 			d, err := demo.New(
 				port,
 				demo.WithS3(viper.GetString("s3.bucket"), viper.GetString("s3.endpoint")),
+				demo.WithSQS(viper.GetString("sqs.url")),
 			)
 			if err != nil {
 				return err
