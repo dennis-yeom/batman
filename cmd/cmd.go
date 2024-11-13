@@ -59,7 +59,7 @@ var (
 		RunE: func(cmd *cobra.Command, args []string) error {
 			d, err := demo.New(
 				port,
-				demo.WithS3(viper.GetString("s3.bucket")),
+				demo.WithS3(viper.GetString("s3.bucket"), viper.GetString("s3.endpoint")),
 			)
 			if err != nil {
 				return err
@@ -93,6 +93,41 @@ var (
 			return nil
 		},
 	}
+
+	// lists all files and their versions
+	ListCmd = &cobra.Command{
+		Use:   "list",
+		Short: "lists contents and versions in buckets",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// Get the bucket name and endpoint from configuration
+			bucket := viper.GetString("s3.bucket")
+			endpoint := viper.GetString("s3.endpoint")
+
+			// check if config filled
+			if bucket == "" {
+				return fmt.Errorf("bucket must be set in the config file")
+			}
+			if endpoint == "" {
+				return fmt.Errorf("endpoint must be set in the config file")
+			}
+
+			// Create a new Demo instance with S3 client configuration
+			d, err := demo.New(
+				port,
+				demo.WithS3(bucket, endpoint),
+			)
+			if err != nil {
+				return fmt.Errorf("failed to configure Demo with S3 client: %v", err)
+			}
+
+			// list and err check
+			if err := d.ListObjectVersions(); err != nil {
+				return fmt.Errorf("failed to list object versions: %v", err)
+			}
+
+			return nil
+		},
+	}
 )
 
 // set up viper for easy configuration
@@ -114,6 +149,7 @@ func init() {
 	RootCmd.AddCommand(GetCmd)
 	RootCmd.AddCommand(WatchCmd)
 	RootCmd.AddCommand(TestCmd)
+	RootCmd.AddCommand(ListCmd)
 
 	// Bind Viper values to flags
 	RootCmd.PersistentFlags().IntVarP(&port, "port", "p", viper.GetInt("redis.port"), "port of redis cache")
