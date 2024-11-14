@@ -5,6 +5,8 @@ Here's a breakdown of how everything is connected:
 
 **main.go -> cmd.go -> demo.go -> s3.go + sqs.go + redis.go**
 
+<br><br>
+
 # Start Guide
 Before starting, make sure you have an SQS queue, Linode bucket, and Redis DB up and running!
 
@@ -79,6 +81,8 @@ Run the program!
 go run main.go watch
 ```
 
+<br><br>
+
 # Viper & Cobra
 >Viper is a configuration management library in Go that helps manage environment variables, configuration files, and command-line flags, making it easy to handle application configuration. Cobra is a powerful library for creating command-line interfaces (CLI) in Go, allowing developers to structure and organize CLI commands and subcommands efficiently. Together, Viper and Cobra are commonly used to build flexible, well-organized CLI applications with robust configuration management.
 
@@ -93,6 +97,8 @@ Make sure you have the appropriate packages downloaded. Paste into terminal.
 go get github.com/spf13/cobra
 go get github.com/spf13/viper
 ```
+
+<br><br>
 
 # Redis
 >Redis (Remote Dictionary Server) is an open-source, in-memory data store known for its speed, flexibility, and support for a variety of data structures, such as strings, hashes, lists, sets, and sorted sets. Primarily used as a cache, message broker, or database, Redis operates entirely in memory with optional persistence to disk, making it exceptionally fast for real-time applications that require low-latency access. Its pub/sub messaging capabilities and atomic operations also make Redis a strong choice for building distributed systems and handling high-throughput workloads like session management, real-time analytics, and leaderboard tracking.
@@ -114,20 +120,5 @@ go get github.com/redis/go-redis/v9
 redis-server --port 6380
 ```
 
-# first steps...
-
-
-
-## setting.getting values in redis
-```
-go run main.go set -k dennis -v 1995
-```
-
-
-```
-go run main.go get -k dennis
-```
-
-![alt text](images/image-3.png)
 
 
