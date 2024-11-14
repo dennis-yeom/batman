@@ -7,4 +7,4 @@ s3:
   endpoint: "https://us-east-1.linodeobjects.com"
 
 sqs:
-  url: https://sqs.us-east-1.amazonaws.com/890742596725/q1934
+  url: https://sqs.us-east-1.amazonaws.com/890742596725/pcw-test-queue

@@ -20,10 +20,13 @@ type S3Client struct {
 	bucket string
 }
 
-// NewS3Client initializes a new S3Client with the specified bucket
+// NewS3Client initializes a new S3 client for the specified bucket and endpoint
 func NewS3Client(ctx context.Context, bucket, endpoint string) (*S3Client, error) {
-	// Load the default configuration with a region
-	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("us-east-1"))
+	// Load the configuration with the Linode profile
+	cfg, err := config.LoadDefaultConfig(ctx,
+		config.WithRegion("us-east-1"),
+		config.WithSharedConfigProfile("linode"), // Specify the Linode profile
+	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load SDK config: %w", err)
 	}

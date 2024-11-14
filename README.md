@@ -5,6 +5,8 @@ file watcher that monitors an s3 compliant bucket. checks if a file was added or
 ```
 go mod init github.com/dennis-yeom/fw
 ```
+## configuring multiple keys...
+![alt text](images/configs.png)
 
 ## installing cobra...
 make sure you have downloaded necessary packages:
